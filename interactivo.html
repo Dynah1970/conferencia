@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Remates bancarios - Pizarrón interactivo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Fuente -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --vino: #9e0066;
+      --azul-marino: #001f3f;
+      --verde: #71d86b;
+      --azul-boton: #1585d8;
+      --gris: #bfbfbf;
+      --beige: #f8ede3;
+      --alto-pizarron: 360px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Montserrat", system-ui, sans-serif;
+      background: var(--beige);
+      color: #222;
+    }
+
+    /* TÍTULO PRINCIPAL */
+
+    .titulo-principal-wrapper {
+      padding: 20px 10px 10px;
+    }
+
+    .titulo-principal {
+      border: 3px solid var(--vino);
+      background: rgba(255, 255, 255, 0.9);
+      width: 80%;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 16px 20px;
+      text-align: center;
+      border-radius: 10px;
+    }
+
+    .titulo-principal h1 {
+      margin: 0;
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--azul-marino);
+      line-height: 1.2;
+    }
+
+    .titulo-principal span {
+      display: block;
+      font-size: 20px;
+      font-weight: 500;
+      margin-top: 4px;
+      color: var(--vino);
+    }
+
+    .subtitulo {
+      text-align: center;
+      margin-top: 4px;
+      font-size: 14px;
+      color: #444;
+    }
+
+    /* PESTAÑAS */
+
+    nav.tabs {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 12px auto 6px;
+      padding: 0 10px 8px;
+    }
+
+    .tab-btn {
+      border: none;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      cursor: pointer;
+      background: linear-gradient(90deg, var(--verde), var(--azul-boton));
+      color: #fff;
+      font-weight: 500;
+      opacity: 0.6;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .tab-btn.active {
+      opacity: 1;
+      transform: translateY(-1px);
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto 30px;
+      padding: 0 12px 20px;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* LAYOUT PRINCIPAL */
+
+    .top-row {
+      display: grid;
+      grid-template-columns: 2.2fr 1.2fr;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .panel {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+      padding: 10px 12px;
+    }
+
+    .panel-titulo {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--azul-marino);
+      margin: 0 0 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    /* BOTONES GENERALES */
+
+    .boton {
+      border: none;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      color: #fff;
+      background: linear-gradient(90deg, var(--verde), var(--azul-boton));
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: transform 0.1s, box-shadow 0.1s, opacity 0.15s;
+    }
+
+    .boton.small {
+      padding: 4px 8px;
+      font-size: 10px;
+    }
+
+    .boton:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .boton[disabled] {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .modo-activo {
+      outline: 2px solid var(--vino);
+      outline-offset: 1px;
+    }
+
+    /* PIZARRÓN IZQUIERDA */
+
+    #panel-pizarron {
+      height: var(--alto-pizarron);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .toolbar-superior {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+      align-items: center;
+    }
+
+    #estado-voz {
+      font-size: 11px;
+      color: #555;
+    }
+    #estado-voz.activo {
+      color: #0b8a2d;
+      font-weight: 600;
+    }
+    #estado-voz.error {
+      color: #b00020;
+      font-weight: 600;
+    }
+
+    #zona-pizarron {
+      flex: 1;
+      border-radius: 8px;
+      border: 2px solid var(--gris);
+      background: var(--azul-marino);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #canvas-pizarron {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+
+    #video-container {
+      position: absolute;
+      inset: 8px;
+      background: #000;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      padding: 8px;
+      gap: 6px;
+      z-index: 2;
+    }
+
+    #video-container video {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 4px;
+    }
+
+    #video-container.hidden {
+      display: none;
+    }
+
+    #video-msg {
+      font-size: 11px;
+      text-align: center;
+      opacity: 0.8;
+    }
+
+    #board-notes {
+      position: absolute;
+      inset: 8px;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .nota-pizarron {
+      position: absolute;
+      min-width: 70px;
+      max-width: 60%;
+      padding: 3px 6px;
+      font-size: 12px;
+      background: rgba(255, 249, 196, 0.9);
+      border-radius: 4px;
+      color: #222;
+      pointer-events: auto;
+      cursor: move;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+    }
+
+    .nota-pizarron:focus {
+      outline: 2px solid var(--vino);
+    }
+
+    /* PANEL COMENTARIOS DERECHA */
+
+    #panel-comentarios {
+      height: var(--alto-pizarron);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #comentarios-wrap {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      gap: 6px;
+    }
+
+    #comentarios-texto {
+      flex: 1;
+      resize: none;
+      border-radius: 6px;
+      border: 1px solid var(--gris);
+      padding: 6px;
+      font-size: 12px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+
+    .comentarios-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      background: #eee;
+      border-radius: 999px;
+      padding: 3px 8px;
+    }
+
+    #comentarios-wrap.oculto {
+      display: none;
+    }
+
+    .divider {
+      border: none;
+      border-top: 4px solid #000;
+      margin: 14px 0 10px;
+    }
+
+    /* FILA INFERIOR */
+
+    .bottom-row {
+      display: grid;
+      grid-template-columns: 1.2fr 1.2fr;
+      gap: 12px;
+    }
+
+    #panel-ranking h3,
+    #panel-calculos h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      color: var(--azul-marino);
+    }
+
+    .ranking-voz {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .meter {
+      margin-bottom: 8px;
+      background: #fdf5e6;
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 11px;
+    }
+
+    .meter-label {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+
+    .chip {
+      font-size: 10px;
+      border-radius: 999px;
+      padding: 2px 7px;
+      color: #fff;
+      opacity: 0.4;
+    }
+
+    .chip.rojo {
+      background: #c22755;
+    }
+
+    .chip.amarillo {
+      background: #f2c94c;
+      color: #333;
+    }
+
+    .chip.verde {
+      background: var(--verde);
+    }
+
+    .chip.activo {
+      opacity: 1;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7);
+    }
+
+    .bateria {
+      height: 14px;
+      border-radius: 999px;
+      background: #e0e0e0;
+      overflow: hidden;
+    }
+
+    .bateria-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--verde);
+      transition: width 0.3s ease, background 0.3s ease;
+    }
+
+    .meter-leyenda {
+      font-size: 10px;
+      margin-top: 2px;
+      color: #444;
+    }
+
+    /* CALCULADORA */
+
+    .calc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+
+    .calc-row label {
+      flex: 1;
+    }
+
+    .calc-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .calc-row input {
+      width: 140px;
+      font-size: 12px;
+      padding: 3px 5px;
+      border-radius: 6px;
+      border: 1px solid var(--gris);
+      text-align: right;
+    }
+
+    .calc-result {
+      font-size: 12px;
+      margin-top: 4px;
+      text-align: left;
+    }
+
+    .calc-caja-resumen {
+      margin-top: 8px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      background: #fdf5e6;
+      font-size: 11px;
+      border: 1px solid #e2c48f;
+      display: none;
+    }
+
+    .calc-caja-resumen strong {
+      color: var(--azul-marino);
+    }
+
+    .resumen-controls {
+      margin-top: 6px;
+      display: flex;
+      justify-content: flex-start;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    /* TAB RESUMEN (solo placeholder) */
+
+    #resumen-lista {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .resumen-item {
+      background: #fff;
+      border-radius: 6px;
+      padding: 8px 10px;
+      border: 1px solid var(--gris);
+    }
+
+    .resumen-item-header {
+      font-size: 11px;
+      color: #555;
+      margin-bottom: 4px;
+    }
+
+    /* OTRAS PESTAÑAS PLACEHOLDER */
+
+    .placeholder {
+      margin-top: 12px;
+      padding: 14px 16px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+      font-size: 13px;
+    }
+
+    .placeholder h2 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      color: var(--azul-marino);
+    }
+
+    /* RESPONSIVE */
+
+    @media (max-width: 960px) {
+      :root {
+        --alto-pizarron: 320px;
+      }
+      .top-row {
+        grid-template-columns: 1.6fr 1.1fr;
+      }
+    }
+
+    @media (max-width: 780px) {
+      :root {
+        --alto-pizarron: 320px;
+      }
+      .top-row {
+        grid-template-columns: 1fr;
+      }
+      #panel-pizarron,
+      #panel-comentarios {
+        height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- TÍTULO -->
+  <div class="titulo-principal-wrapper">
+    <div class="titulo-principal">
+      <h1>Remates Bancarios</h1>
+      <span>Diferentes formas de inversión</span>
+    </div>
+    <div class="subtitulo">
+      Pizarrón interactivo para conferencia y desmitificación de ideas de la audiencia.
+    </div>
+  </div>
+
+  <!-- PESTAÑAS -->
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="pizarron">Pizarrón interactivo</button>
+    <button class="tab-btn" data-tab="inmobiliario">Inmobiliario</button>
+    <button class="tab-btn" data-tab="remates">Remates bancarios</button>
+    <button class="tab-btn" data-tab="flipping">Flipping inmobiliario</button>
+    <button class="tab-btn" data-tab="vivienda">Vivienda</button>
+    <button class="tab-btn" data-tab="resumen">Resumen</button>
+  </nav>
+
+  <main>
+    <!-- TAB PRINCIPAL -->
+    <section id="tab-pizarron" class="tab-content active">
+      <div class="top-row">
+        <!-- PIZARRÓN -->
+        <section id="panel-pizarron" class="panel">
+          <h2 class="panel-titulo">
+            Pizarrón interactivo
+            <button id="btn-toggle-video" class="boton small">
+              🎬 Ocultar video y usar pizarrón
+            </button>
+          </h2>
+
+          <div class="toolbar-superior">
+            <button id="btn-modo-dibujo" class="boton small modo-activo">✏️ Dibujo</button>
+            <button id="btn-modo-texto" class="boton small">🔤 Texto</button>
+            <button id="btn-limpiar" class="boton small">🧽 Limpiar pizarrón</button>
+            <button id="btn-dictado-pizarron" class="boton small" disabled>
+              🎤 Dictar al pizarrón
+            </button>
+            <span id="estado-voz"></span>
+          </div>
+
+          <div id="zona-pizarron">
+            <div id="video-container">
+              <video id="video" controls>
+                <!-- Pon aquí la ruta de tu video si quieres que se reproduzca -->
+                <!-- <source src="tu-video.mp4" type="video/mp4" /> -->
+                Tu navegador no soporta video HTML5.
+              </video>
+              <div id="video-msg">
+                Aquí se muestra el video introductorio.<br />
+                Cuando empiece la conferencia, ocúltalo para usar todo el pizarrón.
+              </div>
+            </div>
+
+            <canvas id="canvas-pizarron"></canvas>
+            <div id="board-notes"></div>
+          </div>
+        </section>
+
+        <!-- COMENTARIOS AUDIENCIA -->
+        <aside id="panel-comentarios" class="panel">
+          <h2 class="panel-titulo">
+            Comentarios de la audiencia
+            <button id="btn-toggle-comentarios" class="boton small">👁️ Ocultar</button>
+          </h2>
+          <div id="comentarios-wrap">
+            <textarea
+              id="comentarios-texto"
+              placeholder="Aquí se registran los mitos, dudas y percepciones iniciales de la audiencia..."
+            ></textarea>
+            <div class="comentarios-footer">
+              <div style="display: flex; gap: 4px; flex-wrap: wrap">
+                <button id="btn-dictado-comentarios" class="boton small" disabled>
+                  🎤 Dictar comentarios
+                </button>
+                <button id="btn-borrar-comentarios" class="boton small">
+                  🗑️ Borrar todo
+                </button>
+              </div>
+              <span class="badge">
+                Úsalo para comparar creencias antes y después de la conferencia.
+              </span>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <hr class="divider" />
+
+      <div class="bottom-row">
+        <!-- RANKING POSESIÓN / RENDIMIENTO -->
+        <section id="panel-ranking" class="panel">
+          <h3>Posesión y rendimiento (ranking visual)</h3>
+          <div class="ranking-voz">
+            <button id="btn-voz-posesion" class="boton small" disabled>
+              🎤 Voz Posesión
+            </button>
+            <button id="btn-voz-rendimiento" class="boton small" disabled>
+              🎤 Voz Rendimiento
+            </button>
+            <button id="btn-limpiar-ranking" class="boton small">
+              🧽 Limpiar niveles
+            </button>
+          </div>
+
+          <div class="meter" data-tipo="posesion">
+            <div class="meter-label">Posesión</div>
+            <div class="chips">
+              <div class="chip rojo" id="chip-posesion-rojo">🔴 Bajo (0–39%)</div>
+              <div class="chip amarillo" id="chip-posesion-amarillo">
+                🟡 Medio (40–60%)
+              </div>
+              <div class="chip verde" id="chip-posesion-verde">🟢 Alto (61–100%)</div>
+            </div>
+            <div class="bateria">
+              <div class="bateria-fill" id="bateria-posesion"></div>
+            </div>
+            <div class="meter-leyenda" id="leyenda-posesion">
+              Pulsa "Voz Posesión" y di, por ejemplo: "30 por ciento".
+            </div>
+          </div>
+
+          <div class="meter" data-tipo="rendimiento">
+            <div class="meter-label">Rendimiento</div>
+            <div class="chips">
+              <div class="chip rojo" id="chip-rendimiento-rojo">🔴 Bajo (0–39%)</div>
+              <div class="chip amarillo" id="chip-rendimiento-amarillo">
+                🟡 Medio (40–60%)
+              </div>
+              <div class="chip verde" id="chip-rendimiento-verde">🟢 Alto (61–100%)</div>
+            </div>
+            <div class="bateria">
+              <div class="bateria-fill" id="bateria-rendimiento"></div>
+            </div>
+            <div class="meter-leyenda" id="leyenda-rendimiento">
+              Pulsa "Voz Rendimiento" y di, por ejemplo: "70 por ciento".
+            </div>
+          </div>
+        </section>
+
+        <!-- CALCULADORA -->
+        <section id="panel-calculos" class="panel">
+          <h3>Calculadora de operación</h3>
+
+          <div class="calc-row">
+            <label for="compra-input">Se compra en:</label>
+            <div class="calc-input-wrap">
+              <button id="btn-voz-compra" class="boton small" disabled>🎤</button>
+              <input id="compra-input" type="text" placeholder="$ 0.00" />
+            </div>
+          </div>
+
+          <div class="calc-row">
+            <label for="avaluo-input">Precio de avalúo:</label>
+            <div class="calc-input-wrap">
+              <button id="btn-voz-avaluo" class="boton small" disabled>🎤</button>
+              <input id="avaluo-input" type="text" placeholder="$ 0.00" />
+            </div>
+          </div>
+
+          <div class="calc-row">
+            <label for="venta-input">Se vende en:</label>
+            <div class="calc-input-wrap">
+              <button id="btn-voz-venta" class="boton small" disabled>🎤</button>
+              <input id="venta-input" type="text" placeholder="$ 0.00" />
+            </div>
+          </div>
+
+          <div class="calc-row">
+            <label for="anios-input">Tiempo (años):</label>
+            <div class="calc-input-wrap">
+              <button id="btn-voz-anios" class="boton small" disabled>🎤</button>
+              <input id="anios-input" type="number" min="1" step="1" value="1" />
+            </div>
+          </div>
+
+          <div class="resumen-controls">
+            <button id="btn-calcular" class="boton small">✅ Calcular</button>
+            <button id="btn-limpiar-calculadora" class="boton small">
+              🧽 Limpiar calculadora
+            </button>
+          </div>
+
+          <div id="calc-caja-resumen" class="calc-caja-resumen">
+            <strong>Resultado de la operación:</strong>
+            <div id="calc-linea-compra" class="calc-result"></div>
+            <div id="calc-linea-avaluo" class="calc-result"></div>
+            <div id="calc-linea-venta" class="calc-result"></div>
+            <div id="calc-descuento" class="calc-result"></div>
+            <div id="calc-ganancia" class="calc-result"></div>
+            <div id="calc-anual" class="calc-result"></div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- PESTAÑA INMOBILIARIO -->
+    <section id="tab-inmobiliario" class="tab-content">
+      <div class="placeholder">
+        <h2>Inmobiliario</h2>
+        <p>
+          Aquí se integrará la explicación general del mercado inmobiliario y comparativos con otras formas de inversión.
+        </p>
+      </div>
+    </section>
+
+    <!-- PESTAÑA REMATES -->
+    <section id="tab-remates" class="tab-content">
+      <div class="placeholder">
+        <h2>Remates bancarios</h2>
+        <p>
+          Pestaña para explicar a detalle qué es un remate bancario, etapas jurídicas, tiempos y casos reales enlazados al pizarrón.
+        </p>
+      </div>
+    </section>
+
+    <!-- PESTAÑA FLIPPING -->
+    <section id="tab-flipping" class="tab-content">
+      <div class="placeholder">
+        <h2>Flipping inmobiliario</h2>
+        <p>
+          Aquí irá el flujo compra–remodelación–venta comparado con remates y otras estrategias.
+        </p>
+      </div>
+    </section>
+
+    <!-- PESTAÑA VIVIENDA -->
+    <section id="tab-vivienda" class="tab-content">
+      <div class="placeholder">
+        <h2>Vivienda</h2>
+        <p>
+          Espacio para hablar de vivienda para vivir, rentar, seguridad de la zona, amenidades, y compararlo con remates y otras inversiones.
+        </p>
+      </div>
+    </section>
+
+    <!-- PESTAÑA RESUMEN (solo textual, sin calculadora) -->
+    <section id="tab-resumen" class="tab-content">
+      <div class="placeholder">
+        <h2>Resumen de la sesión</h2>
+        <p>
+          Aquí, al final, podrás escribir o pegar manualmente el resumen de las creencias iniciales de la audiencia,
+          lo que se trabajó en cada tipo de inversión (remates, flipping, pool, vivienda, etc.) y los puntos clave
+          que se aclararon durante la conferencia.
+        </p>
+        <div id="resumen-lista"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /**************
+     * PESTAÑAS
+     **************/
+    const tabButtons = document.querySelectorAll(".tab-btn");
+    const tabContents = document.querySelectorAll(".tab-content");
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.tab;
+        tabButtons.forEach((b) => b.classList.remove("active"));
+        tabContents.forEach((c) => c.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("tab-" + target).classList.add("active");
+      });
+    });
+
+    /**************
+     * PIZARRÓN (CANVAS)
+     **************/
+    const canvas = document.getElementById("canvas-pizarron");
+    const zonaPizarron = document.getElementById("zona-pizarron");
+    const ctx = canvas.getContext("2d");
+    const boardNotes = document.getElementById("board-notes");
+
+    function resizeCanvas() {
+      const rect = zonaPizarron.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+
+    window.addEventListener("load", resizeCanvas);
+    window.addEventListener("resize", resizeCanvas);
+
+    let modo = "dibujo";
+    let dibujando = false;
+    let ultimoX = 0;
+    let ultimoY = 0;
+
+    function comenzarDibujo(x, y) {
+      if (modo !== "dibujo") return;
+      dibujando = true;
+      ultimoX = x;
+      ultimoY = y;
+    }
+
+    function trazarLinea(x, y) {
+      if (!dibujando || modo !== "dibujo") return;
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(ultimoX, ultimoY);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      ultimoX = x;
+      ultimoY = y;
+    }
+
+    function terminarDibujo() {
+      dibujando = false;
+    }
+
+    canvas.addEventListener("mousedown", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      if (modo === "dibujo") {
+        comenzarDibujo(x, y);
+      } else if (modo === "texto") {
+        crearNotaEn(x, y);
+      }
+    });
+
+    canvas.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      trazarLinea(e.clientX - rect.left, e.clientY - rect.top);
+    });
+
+    window.addEventListener("mouseup", terminarDibujo);
+
+    canvas.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const t = e.touches[0];
+      const x = t.clientX - rect.left;
+      const y = t.clientY - rect.top;
+      if (modo === "dibujo") {
+        comenzarDibujo(x, y);
+      } else if (modo === "texto") {
+        crearNotaEn(x, y);
+      }
+    });
+
+    canvas.addEventListener("touchmove", (e) => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const t = e.touches[0];
+      trazarLinea(t.clientX - rect.left, t.clientY - rect.top);
+    });
+
+    canvas.addEventListener("touchend", (e) => {
+      e.preventDefault();
+      terminarDibujo();
+    });
+
+    function crearNotaEn(x, y, textoInicial = "") {
+      const nota = document.createElement("div");
+      nota.className = "nota-pizarron";
+      nota.contentEditable = true;
+      nota.textContent = textoInicial || "Nuevo texto";
+      nota.style.left = x + "px";
+      nota.style.top = y + "px";
+
+      let arrastrando = false;
+      let offsetX = 0;
+      let offsetY = 0;
+
+      nota.addEventListener("mousedown", (e) => {
+        arrastrando = true;
+        offsetX = e.offsetX;
+        offsetY = e.offsetY;
+      });
+
+      window.addEventListener("mousemove", (e) => {
+        if (!arrastrando) return;
+        const rect = zonaPizarron.getBoundingClientRect();
+        nota.style.left = e.clientX - rect.left - offsetX + "px";
+        nota.style.top = e.clientY - rect.top - offsetY + "px";
+      });
+
+      window.addEventListener("mouseup", () => {
+        arrastrando = false;
+      });
+
+      nota.addEventListener("keydown", (e) => {
+        if (e.key === "Delete") {
+          nota.remove();
+        }
+      });
+
+      boardNotes.appendChild(nota);
+      nota.focus();
+    }
+
+    document.getElementById("btn-limpiar").addEventListener("click", () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      boardNotes.innerHTML = "";
+    });
+
+    const btnModoDibujo = document.getElementById("btn-modo-dibujo");
+    const btnModoTexto = document.getElementById("btn-modo-texto");
+
+    btnModoDibujo.addEventListener("click", () => {
+      modo = "dibujo";
+      btnModoDibujo.classList.add("modo-activo");
+      btnModoTexto.classList.remove("modo-activo");
+      canvas.style.cursor = "crosshair";
+    });
+
+    btnModoTexto.addEventListener("click", () => {
+      modo = "texto";
+      btnModoTexto.classList.add("modo-activo");
+      btnModoDibujo.classList.remove("modo-activo");
+      canvas.style.cursor = "text";
+    });
+
+    /**************
+     * VIDEO TOGGLE
+     **************/
+    const videoContainer = document.getElementById("video-container");
+    const btnToggleVideo = document.getElementById("btn-toggle-video");
+    let videoVisible = true;
+
+    btnToggleVideo.addEventListener("click", () => {
+      videoVisible = !videoVisible;
+      if (videoVisible) {
+        videoContainer.classList.remove("hidden");
+        btnToggleVideo.textContent = "🎬 Ocultar video y usar pizarrón";
+      } else {
+        videoContainer.classList.add("hidden");
+        btnToggleVideo.textContent = "🔁 Volver a mostrar video";
+      }
+    });
+
+    /**************
+     * COMENTARIOS
+     **************/
+    const comentariosWrap = document.getElementById("comentarios-wrap");
+    const comentariosTexto = document.getElementById("comentarios-texto");
+    const btnToggleComentarios = document.getElementById("btn-toggle-comentarios");
+    const btnBorrarComentarios = document.getElementById("btn-borrar-comentarios");
+
+    btnToggleComentarios.addEventListener("click", () => {
+      const oculto = comentariosWrap.classList.toggle("oculto");
+      btnToggleComentarios.textContent = oculto ? "👁️ Mostrar" : "👁️ Ocultar";
+    });
+
+    btnBorrarComentarios.addEventListener("click", () => {
+      if (confirm("¿Borrar todos los comentarios de la audiencia?")) {
+        comentariosTexto.value = "";
+      }
+    });
+
+    /**************
+     * RANKING POSESIÓN / RENDIMIENTO
+     **************/
+    function actualizarMeter(tipo, valor) {
+      if (isNaN(valor)) return;
+      if (valor < 0) valor = 0;
+      if (valor > 100) valor = 100;
+
+      const barra = document.getElementById("bateria-" + tipo);
+      const leyenda = document.getElementById("leyenda-" + tipo);
+      const chipR = document.getElementById("chip-" + tipo + "-rojo");
+      const chipA = document.getElementById("chip-" + tipo + "-amarillo");
+      const chipV = document.getElementById("chip-" + tipo + "-verde");
+
+      barra.style.width = valor + "%";
+
+      chipR.classList.remove("activo");
+      chipA.classList.remove("activo");
+      chipV.classList.remove("activo");
+
+      let texto = "";
+      let color = "";
+
+      if (valor < 40) {
+        chipR.classList.add("activo");
+        color = "#c22755";
+        texto = "Bajo (" + valor.toFixed(0) + "%)";
+      } else if (valor <= 60) {
+        chipA.classList.add("activo");
+        color = "#f2c94c";
+        texto = "Medio (" + valor.toFixed(0) + "%)";
+      } else {
+        chipV.classList.add("activo");
+        color = "#71d86b";
+        texto = "Alto (" + valor.toFixed(0) + "%)";
+      }
+      barra.style.background = color;
+      leyenda.textContent =
+        tipo.charAt(0).toUpperCase() + tipo.slice(1) + ": " + texto + ".";
+    }
+
+    document.getElementById("btn-limpiar-ranking").addEventListener("click", () => {
+      actualizarMeter("posesion", 0);
+      actualizarMeter("rendimiento", 0);
+    });
+
+    /**************
+     * CALCULADORA
+     **************/
+    const compraInput = document.getElementById("compra-input");
+    const avaluoInput = document.getElementById("avaluo-input");
+    const ventaInput = document.getElementById("venta-input");
+    const aniosInput = document.getElementById("anios-input");
+
+    const cajaResumenCalc = document.getElementById("calc-caja-resumen");
+    const calcLineaCompra = document.getElementById("calc-linea-compra");
+    const calcLineaAvaluo = document.getElementById("calc-linea-avaluo");
+    const calcLineaVenta = document.getElementById("calc-linea-venta");
+    const calcDescuento = document.getElementById("calc-descuento");
+    const calcGanancia = document.getElementById("calc-ganancia");
+    const calcAnual = document.getElementById("calc-anual");
+
+    const btnCalcular = document.getElementById("btn-calcular");
+    const btnLimpiarCalculadora = document.getElementById("btn-limpiar-calculadora");
+
+    function parseMoney(texto) {
+      if (!texto) return 0;
+      const limpio = texto.toString().replace(/[^0-9.-]/g, "");
+      if (!limpio) return 0;
+      return parseFloat(limpio) || 0;
+    }
+
+    function formatMoney(valor) {
+      if (!isFinite(valor)) valor = 0;
+      return valor.toLocaleString("es-MX", {
+        style: "currency",
+        currency: "MXN",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+    }
+
+    function formatearInputDinero(input) {
+      const num = parseMoney(input.value);
+      if (!num) {
+        input.value = "";
+        return;
+      }
+      input.value = formatMoney(num);
+    }
+
+    [compraInput, avaluoInput, ventaInput].forEach((inp) => {
+      inp.addEventListener("blur", () => formatearInputDinero(inp));
+    });
+
+    btnCalcular.addEventListener("click", () => {
+      const compra = parseMoney(compraInput.value);
+      const avaluo = parseMoney(avaluoInput.value);
+      const venta = parseMoney(ventaInput.value);
+      const anios = parseInt(aniosInput.value, 10) || 1;
+
+      if (!compra && !avaluo && !venta) {
+        cajaResumenCalc.style.display = "none";
+        calcLineaCompra.textContent = "";
+        calcLineaAvaluo.textContent = "";
+        calcLineaVenta.textContent = "";
+        calcDescuento.textContent = "";
+        calcGanancia.textContent = "";
+        calcAnual.textContent = "";
+        return;
+      }
+
+      const descuento = Math.max(avaluo - compra, 0);
+      const gananciaTotal = venta - compra;
+      const gananciaAnual = gananciaTotal / (anios > 0 ? anios : 1);
+
+      calcLineaCompra.textContent = "Se compra en: " + formatMoney(compra);
+      calcLineaAvaluo.textContent = "Precio de avalúo: " + formatMoney(avaluo);
+      calcLineaVenta.textContent = "Se vende en: " + formatMoney(venta);
+
+      calcDescuento.textContent =
+        "Descuento frente al precio de avalúo: " + formatMoney(descuento);
+      calcGanancia.textContent =
+        "Ganancia total estimada: " + formatMoney(gananciaTotal);
+      calcAnual.textContent =
+        "Ganancia promedio anual (" +
+        anios +
+        " año(s)): " +
+        formatMoney(gananciaAnual);
+
+      cajaResumenCalc.style.display = "block";
+    });
+
+    btnLimpiarCalculadora.addEventListener("click", () => {
+      compraInput.value = "";
+      avaluoInput.value = "";
+      ventaInput.value = "";
+      aniosInput.value = 1;
+      cajaResumenCalc.style.display = "none";
+      calcLineaCompra.textContent = "";
+      calcLineaAvaluo.textContent = "";
+      calcLineaVenta.textContent = "";
+      calcDescuento.textContent = "";
+      calcGanancia.textContent = "";
+      calcAnual.textContent = "";
+    });
+/* ===================================
+   RECONOCIMIENTO DE VOZ
+=================================== */
+
+const SpeechRecognition =
+  window.SpeechRecognition || window.webkitSpeechRecognition;
+
+const btnDictadoPizarron = document.getElementById("btn-dictado-pizarron");
+const btnDictadoComentarios = document.getElementById("btn-dictado-comentarios");
+const btnVozPosesion = document.getElementById("btn-voz-posesion");
+const btnVozRendimiento = document.getElementById("btn-voz-rendimiento");
+const btnVozCompra = document.getElementById("btn-voz-compra");
+const btnVozAvaluo = document.getElementById("btn-voz-avaluo");
+const btnVozVenta = document.getElementById("btn-voz-venta");
+const btnVozAnios = document.getElementById("btn-voz-anios");
+const estadoVoz = document.getElementById("estado-voz");
+
+let recognition = null;
+let modoVoz = null;
+
+/* Estado visual del reconocimiento */
+function setEstadoVoz(msg, clase) {
+  estadoVoz.textContent = msg || "";
+  estadoVoz.classList.remove("activo", "error");
+  if (clase) estadoVoz.classList.add(clase);
+}
+
+/* Normalizar texto */
+function normalizarTexto(t) {
+  return t
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+/* Convertir palabras a número */
+function palabrasANumero(texto) {
+  texto = normalizarTexto(texto);
+  const tokens = texto.split(/[^a-z]+/).filter(Boolean);
+  if (!tokens.length) return null;
+
+  const mapa = {
+    cero: 0, un: 1, uno: 1, una: 1,
+    dos: 2, tres: 3, cuatro: 4, cinco: 5,
+    seis: 6, siete: 7, ocho: 8, nueve: 9,
+    diez: 10, once: 11, doce: 12, trece: 13,
+    catorce: 14, quince: 15,
+    veinte: 20, treinta: 30, cuarenta: 40,
+    cincuenta: 50, sesenta: 60, setenta: 70,
+    ochenta: 80, noventa: 90,
+    cien: 100, ciento: 100,
+    doscientos: 200, trescientos: 300,
+    cuatrocientos: 400, quinientos: 500,
+    seiscientos: 600, setecientos: 700,
+    setecientas: 700, ochocientos: 800,
+    novecientos: 900
+  };
+
+  let total = 0;
+  let actual = 0;
+
+  for (let w of tokens) {
+    if (mapa[w] != null) {
+      actual += mapa[w];
+    } else if (w === "mil") {
+      if (actual === 0) actual = 1;
+      total += actual * 1000;
+      actual = 0;
+    } else if (w === "millon" || w === "millones") {
+      if (actual === 0) actual = 1;
+      total += actual * 1000000;
+      actual = 0;
+    }
+  }
+
+  total += actual;
+  return total > 0 ? total : null;
+}
+
+/* ===================================
+   🔥 FUNCIÓN FINAL PARA EXTRAER NÚMEROS GRANDES
+=================================== */
+function extraerNumeroDesdeTexto(texto) {
+  if (!texto) return null;
+
+  texto = texto.toLowerCase();
+
+  let candidatos = [];
+
+  // 1) Detectar números como 1,800,000 — 1.800.000 — 1 800 000
+  let match = texto.match(/\d[\d.,\s]*\d/g);
+  if (match) {
+    match.forEach(m => {
+      let raw = m.replace(/\s+/g, "").replace(/\./g, "").replace(/,/g, "");
+      let n = parseFloat(raw);
+      if (!isNaN(n) && n > 0) candidatos.push(n);
+    });
+  }
+
+  // 2) Detectar números simples como 400000, 1200, 300, 250
+  let simples = texto.match(/\d+/g);
+  if (simples) {
+    simples.forEach(s => {
+      let n = parseInt(s, 10);
+      if (!isNaN(n) && n > 0) candidatos.push(n);
+    });
+  }
+
+  // 3) Interpretar palabras grandes "un millón cuatrocientos mil"
+  let nPalabras = palabrasANumero(texto);
+  if (nPalabras && nPalabras > 0) candidatos.push(nPalabras);
+
+  // 4) Si no hubo nada válido → null
+  if (candidatos.length === 0) return null;
+
+  // 5) REGRESA SIEMPRE EL NÚMERO MÁS GRANDE
+  return Math.max(...candidatos);
+}
+
+/* ===================================
+   ACTIVACIÓN DEL SPEECH RECOGNITION
+=================================== */
+if (SpeechRecognition) {
+  recognition = new SpeechRecognition();
+  recognition.lang = "es-MX";
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  [
+    btnDictadoPizarron,
+    btnDictadoComentarios,
+    btnVozPosesion,
+    btnVozRendimiento,
+    btnVozCompra,
+    btnVozAvaluo,
+    btnVozVenta,
+    btnVozAnios
+  ].forEach(b => (b.disabled = false));
+
+  recognition.onstart = () => {
+    setEstadoVoz("Escuchando (" + modoVoz + ")…", "activo");
+  };
+
+  recognition.onerror = (e) => {
+    setEstadoVoz("Error: " + e.error, "error");
+  };
+
+  recognition.onend = () => {
+    setEstadoVoz("");
+  };
+
+  recognition.onresult = (e) => {
+    const texto = e.results[e.results.length - 1][0].transcript.trim();
+    if (!texto) return;
+
+    // Pizarrón
+    if (modoVoz === "pizarron") {
+      crearNotaEn(20, 20 + boardNotes.children.length * 22, texto);
+      return;
+    }
+
+    // Comentarios
+    if (modoVoz === "comentarios") {
+      const actual = comentariosTexto.value.trim();
+      comentariosTexto.value = (actual ? actual + "\n" : "") + "- " + texto;
+      return;
+    }
+
+    // Números
+    const numero = extraerNumeroDesdeTexto(texto);
+    if (numero == null) return;
+
+    if (modoVoz === "posesion") {
+      actualizarMeter("posesion", numero);
+
+    } else if (modoVoz === "rendimiento") {
+      actualizarMeter("rendimiento", numero);
+
+    } else if (modoVoz === "compra") {
+      compraInput.value = formatMoney(numero);
+
+    } else if (modoVoz === "avaluo") {
+      avaluoInput.value = formatMoney(numero);
+
+    } else if (modoVoz === "venta") {
+      ventaInput.value = formatMoney(numero);
+
+    } else if (modoVoz === "anios") {
+      if (numero > 0) aniosInput.value = Math.round(numero);
+    }
+  };
+
+  function iniciarDictado(nuevoModo) {
+    if (!recognition) return;
+    modoVoz = nuevoModo;
+    try { recognition.abort(); } catch(e) {}
+    recognition.start();
+  }
+
+  // Botones
+  btnDictadoPizarron.addEventListener("click", () => iniciarDictado("pizarron"));
+  btnDictadoComentarios.addEventListener("click", () => iniciarDictado("comentarios"));
+  btnVozPosesion.addEventListener("click", () => iniciarDictado("posesion"));
+  btnVozRendimiento.addEventListener("click", () => iniciarDictado("rendimiento"));
+  btnVozCompra.addEventListener("click", () => iniciarDictado("compra"));
+  btnVozAvaluo.addEventListener("click", () => iniciarDictado("avaluo"));
+  btnVozVenta.addEventListener("click", () => iniciarDictado("venta"));
+  btnVozAnios.addEventListener("click", () => iniciarDictado("anios"));
+
+} else {
+  setEstadoVoz("El dictado por voz no está disponible en este navegador.", "error");
+}
+
+  </script>
+</body>
+</html>
